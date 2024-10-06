@@ -1,7 +1,112 @@
 ﻿@page "/"
+@using BlazorBlockchain.Models
+@inject BlazorBlockchain.Services.IBlockchainService BlockchainService;
 
-<PageTitle>Home</PageTitle>
+<MudTabs Outlined="true">
+    <MudTabPanel Text="Users" Icon="@Icons.Material.Filled.Person">
+        <MudGrid>
+            <MudItem xs="12" sm="12">
+                <MudPaper Class="pa-4">
+                    <MudTextField @bind-Value="Name" T="string" Label="Name"/>
+                    <MudTextField @bind-Value="Balance" T="int" Label="Money" />
+                    <MudButton Style="margin-top:15px" Variant="Variant.Filled" Color="Color.Primary" DropShadow="false" OnClick="AddUser">Add</MudButton>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="12">
+                <MudDataGrid Items="@Users">
+                    <Columns>
+                        <PropertyColumn Property="x => x.Name" Title="Name" />
+                        <PropertyColumn Property="x => x.Balance" Title="Balance"/>
+                    </Columns>
+                </MudDataGrid>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+    <MudTabPanel Text="Transactions" Icon="@Icons.Material.Filled.Money">
+        <MudGrid>
+            <MudItem xs="5" sm="5">
+                <MudList @bind-SelectedValue="Sender" T="User" Color="@Color.Info" SelectionMode="SelectionMode.SingleSelection">
+                    @foreach(User User in Users)
+                    {
+                        <MudListItem Text="@User.Name" Value="User" Icon="@Icons.Material.Filled.Person" />
+                    }
+                </MudList>
+            </MudItem>
+            <MudItem xs="2" sm="2">
+                <MudNumericField @bind-Value="TransactionValue"></MudNumericField>
+            </MudItem>
+            <MudItem xs="5" sm="5">
+                <MudList @bind-SelectedValue="Recipient" T="User" Color="@Color.Info" SelectionMode="SelectionMode.SingleSelection">
+                    @foreach (User User in Users)
+                    {
+                        <MudListItem Text="@User.Name" Value="User" Icon="@Icons.Material.Filled.Person" />
+                    }
+                </MudList>
+            </MudItem>
+            <MudItem xs="12" sm="12">
+                <MudButton Style="margin-top:15px" Variant="Variant.Filled" Color="Color.Primary" DropShadow="false" OnClick="AddTransaction">Add</MudButton>
+            </MudItem>
+            <MudItem xs="12" sm="12">
+                <MudDataGrid Items="@BlockchainService.GetTransactions()">
+                    <Columns>
+                        <PropertyColumn Property="x => x.Sender.Name" Title="Sender" />
+                        <PropertyColumn Property="x => x.Recipient.Name" Title="Recipient" />
+                        <PropertyColumn Property="x => x.Value" Title="Value" />
+                        <PropertyColumn Property="x => x.Timestamp" Title="TimeStamp" />
+                        <PropertyColumn Property="x => Transaction.FormatSignature(x.Signature)" Title="Signature" />
+                    </Columns>
+                </MudDataGrid>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+    <MudTabPanel Text="Blockchain" Icon="@Icons.Material.Filled.Rowing">
+        <MudButton Style="margin-bottom:15px" Variant="Variant.Filled" Color="Color.Primary" DropShadow="false" OnClick="Mine">Mine</MudButton>
+        <MudDataGrid Items="@BlockChain"
+                     ReadOnly="true" EditMode="@DataGridEditMode.Cell">
+            <Columns>
+                <PropertyColumn Property="x => x.Serial" />
+                <PropertyColumn Property="x => x.Timestamp" />
+                <PropertyColumn Property="x => x.Nonce" />
+            </Columns>
+            <ChildRowContent>
+                <MudCard>
+                    <MudCardContent>
+                        <MudText>MerkelRoot: @context.Item.MerkelRoot</MudText>
+                        <MudText>Hash: @context.Item.Hash</MudText>
+                        <MudText>PreviousBlockHash: @context.Item.PreviousBlockHash</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </ChildRowContent>
+        </MudDataGrid>
+    </MudTabPanel>
+</MudTabs>
 
-<h1>Hello, world!</h1>
+@code{
+    private List<User> Users = [];
+    private List<Models.Block> BlockChain = [];
+    private string Name = string.Empty;
+    private int Balance = 0;
 
-Welcome to your new app.
+    private int TransactionValue = 0;
+
+    private User Sender;
+    private User Recipient;
+
+    private void AddUser()
+    {
+        User NewUser = new User(Name, Balance);
+        Users.Add(NewUser);
+    }
+
+    private void AddTransaction()
+    {
+        BlockchainService.CreateTransaction(Sender, Recipient, TransactionValue);
+    }
+
+    private void Mine()
+    {
+        BlockchainService.MineBlock();
+        BlockChain = BlockchainService.GetBlockChain();
+        StateHasChanged();
+    }
+}

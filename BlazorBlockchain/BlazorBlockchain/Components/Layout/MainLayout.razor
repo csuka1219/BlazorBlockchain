@@ -1,6 +1,15 @@
 ﻿@inherits LayoutComponentBase
 
-@Body
+<MudThemeProvider IsDarkMode = "true"/>
+<MudPopoverProvider />
+
+<MudDialogProvider />
+
+<MudSnackbarProvider />
+
+<div style="padding:30px">
+    @Body
+</div>
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.

@@ -1,4 +1,6 @@
 using BlazorBlockchain.Components;
+using BlazorBlockchain.Services;
+using MudBlazor.Services;
 
 namespace BlazorBlockchain
 {
@@ -12,6 +14,8 @@ namespace BlazorBlockchain
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
+            builder.Services.AddScoped<IBlockchainService, BlockchainService>();
+            builder.Services.AddMudServices();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
