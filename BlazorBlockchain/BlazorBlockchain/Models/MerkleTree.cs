@@ -3,29 +3,35 @@ using System.Text;
 
 namespace BlazorBlockchain.Models
 {
-    public class MerkleTree
+    public static class MerkleTree
     {
-        public static string HashTransaction(Transaction transaction)
+        public static List<List<string>> MerkleTrees = new List<List<string>>();
+        private static string Hash(string s)
         {
             using (SHA256 sha256 = SHA256.Create())
             {
                 // Convert the transaction to string and hash it
-                byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(transaction.GetTransactionString()));
+                byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(s));
                 return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
             }
+        }
+        public static string HashTransaction(Transaction transaction)
+        {
+            return Hash(transaction.GetTransactionString());
         }
 
         public static string BuildMerkleTree(List<Transaction> transactions)
         {
             List<string> transactionHashes = new List<string>();
+            MerkleTrees.Add(new List<string>());
 
             foreach (var transaction in transactions)
             {
                 transactionHashes.Add(HashTransaction(transaction));
+                MerkleTrees.Last().Add(HashTransaction(transaction));
             }
 
             Console.WriteLine("---------Merkle Tree---------\n");
-
             while (transactionHashes.Count >= 2)
             {
                 List<string> tempHashes = new List<string>();
@@ -35,9 +41,10 @@ namespace BlazorBlockchain.Models
                     if (i + 1 == transactionHashes.Count)
                     {
                         transactionHashes.Add(transactionHashes[i]);
+                        MerkleTrees.Last().Add(transactionHashes[i]);
                     }
 
-                    string combinedHash = transactionHashes[i] + transactionHashes[i + 1];
+                    string combinedHash = Hash(transactionHashes[i] + transactionHashes[i + 1]);
                     tempHashes.Add(combinedHash);
                 }
 
@@ -52,9 +59,11 @@ namespace BlazorBlockchain.Models
                 Console.WriteLine("Next level (upper):");
                 foreach (var tx in transactionHashes)
                 {
+                    MerkleTrees.Last().Add(tx);
                     Console.WriteLine(tx);
                 }
             }
+
 
             return transactionHashes.FirstOrDefault();
         }

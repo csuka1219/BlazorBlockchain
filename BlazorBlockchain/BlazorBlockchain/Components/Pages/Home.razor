@@ -61,12 +61,19 @@
     </MudTabPanel>
     <MudTabPanel Text="Blockchain" Icon="@Icons.Material.Filled.Rowing">
         <MudButton Style="margin-bottom:15px" Variant="Variant.Filled" Color="Color.Primary" DropShadow="false" OnClick="Mine">Mine</MudButton>
-        <MudDataGrid Items="@BlockChain"
+        <MudDataGrid Items="@BlockChain" RowsPerPage="5"
                      ReadOnly="true" EditMode="@DataGridEditMode.Cell">
             <Columns>
                 <PropertyColumn Property="x => x.Serial" />
                 <PropertyColumn Property="x => x.Timestamp" />
                 <PropertyColumn Property="x => x.Nonce" />
+                <TemplateColumn CellClass="d-flex justify-end">
+                    <CellTemplate>
+                        <MudStack Row>
+                            <MudButton OnClick="()=>ShowMerkleTree(context.Item.MerkelRoot)" Variant="@Variant.Filled" Color="@Color.Secondary">MerkleTree</MudButton>
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
             </Columns>
             <ChildRowContent>
                 <MudCard>
@@ -81,6 +88,24 @@
     </MudTabPanel>
 </MudTabs>
 
+<MudMessageBox @ref="_mudMessageBox" Title="MerkleTree" CancelText="Ok">
+    <MessageContent>
+        @if (MerkleTree.MerkleTrees[MerkleTreeIndex] != null && MerkleTree.MerkleTrees[MerkleTreeIndex].Count > 0)
+        {
+            <ul>
+                @foreach (var node in MerkleTree.MerkleTrees[MerkleTreeIndex])
+                {
+                    <li>@node</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>No tree to display.</p>
+        }
+    </MessageContent>
+</MudMessageBox>
+
 @code{
     private List<User> Users = [];
     private List<Models.Block> BlockChain = [];
@@ -91,6 +116,9 @@
 
     private User Sender;
     private User Recipient;
+
+    private MudMessageBox _mudMessageBox;
+    private int MerkleTreeIndex = 0;
 
     private void AddUser()
     {
@@ -108,5 +136,11 @@
         BlockchainService.MineBlock();
         BlockChain = BlockchainService.GetBlockChain();
         StateHasChanged();
+    }
+
+    private async Task ShowMerkleTree(string root)
+    {
+        MerkleTreeIndex = MerkleTree.MerkleTrees.FindIndex(mt => mt.Any(x => x == root));
+        await _mudMessageBox.ShowAsync();
     }
 }
