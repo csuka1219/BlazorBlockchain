@@ -10,7 +10,6 @@ namespace BlazorBlockchain.Models
         {
             using (SHA256 sha256 = SHA256.Create())
             {
-                // Convert the transaction to string and hash it
                 byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(s));
                 return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
             }
@@ -48,7 +47,6 @@ namespace BlazorBlockchain.Models
                     tempHashes.Add(combinedHash);
                 }
 
-                Console.WriteLine("Current level (lower):");
                 foreach (var tx in transactionHashes)
                 {
                     Console.WriteLine(tx);
@@ -56,7 +54,6 @@ namespace BlazorBlockchain.Models
 
                 transactionHashes = new List<string>(tempHashes);
 
-                Console.WriteLine("Next level (upper):");
                 foreach (var tx in transactionHashes)
                 {
                     MerkleTrees.Last().Add(tx);

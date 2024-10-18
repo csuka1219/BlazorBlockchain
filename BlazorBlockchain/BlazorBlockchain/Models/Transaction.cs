@@ -20,7 +20,6 @@ namespace BlazorBlockchain.Models
             Value = value;
             Timestamp = DateTime.Now.ToString("yyyy/MM/dd, HH:mm:ss");
 
-            Console.WriteLine("------------------------------------------");
             Console.WriteLine("Transaction:");
             Console.WriteLine(JsonConvert.SerializeObject(GetTransaction(), Newtonsoft.Json.Formatting.Indented));
             Signature = SignTransaction();
@@ -39,7 +38,6 @@ namespace BlazorBlockchain.Models
                         Sender.Balance -= Value;
                         Recipient.Balance += Value;
                         Console.WriteLine("Success!");
-                        Console.WriteLine($"{Sender.Name} successfully sent {Value} coins to {Recipient.Name}\n");
                     }
                     else
                     {
